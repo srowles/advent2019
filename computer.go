@@ -15,27 +15,66 @@ type IntcodeComputer struct {
 
 // Incode Computer Instructions
 var (
-	Add  = 1
-	Mul  = 2
-	Halt = 99
+	Add    = 1
+	Mul    = 2
+	Input  = 3
+	Output = 4
+	Halt   = 99
 )
+
+var input = 1
 
 // Run runs the program until it halts
 func (i *IntcodeComputer) Run() error {
 	for {
-		switch i.program[i.pointer] {
+		var codes []int
+		codes = intToSlice(i.program[i.pointer], codes)
+		for k := 0; k <= 3; k++ {
+			codes = append(codes, 0)
+		}
+
+		opcode := codes[0]
+		opcode += codes[1] * 10
+
+		switch opcode {
 		case Add:
-			i.program[i.program[i.pointer+3]] = i.program[i.program[i.pointer+1]] + i.program[i.program[i.pointer+2]]
+			i.program[i.program[i.pointer+3]] = i.getVal(1, codes) + i.getVal(2, codes)
 			i.pointer += 4
 		case Mul:
-			i.program[i.program[i.pointer+3]] = i.program[i.program[i.pointer+1]] * i.program[i.program[i.pointer+2]]
+			i.program[i.program[i.pointer+3]] = i.getVal(1, codes) * i.getVal(2, codes)
 			i.pointer += 4
+		case Input:
+			i.program[i.program[i.pointer+1]] = input
+			i.pointer += 2
+		case Output:
+			if codes[2] == 0 {
+				fmt.Println("Output:", i.program[i.program[i.pointer+1]])
+			} else {
+				fmt.Println("Output:", i.program[i.pointer+1])
+			}
+			i.pointer += 2
 		case Halt:
 			return nil
 		default:
 			return fmt.Errorf("Invalid opcode: %v found at pointer: %v", i.program[i.pointer], i.pointer)
 		}
 	}
+}
+
+func (i *IntcodeComputer) getVal(idx int, codes []int) int {
+	if codes[idx+1] == 0 {
+		return i.program[i.program[i.pointer+idx]]
+	}
+	return i.program[i.pointer+idx]
+}
+
+func intToSlice(n int, sequence []int) []int {
+	if n != 0 {
+		i := n % 10
+		sequence = append(sequence, i)
+		return intToSlice(n/10, sequence)
+	}
+	return sequence
 }
 
 // Peek allows inspecting the program
