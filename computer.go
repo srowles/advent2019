@@ -19,10 +19,14 @@ var (
 	Mul    = 2
 	Input  = 3
 	Output = 4
+	JIT    = 5
+	JIF    = 6
+	LT     = 7
+	EQ     = 8
 	Halt   = 99
 )
 
-var input = 1
+var input = 5
 
 // Run runs the program until it halts
 func (i *IntcodeComputer) Run() error {
@@ -44,7 +48,11 @@ func (i *IntcodeComputer) Run() error {
 			i.program[i.program[i.pointer+3]] = i.getVal(1, codes) * i.getVal(2, codes)
 			i.pointer += 4
 		case Input:
-			i.program[i.program[i.pointer+1]] = input
+			if codes[2] == 0 {
+				i.program[i.program[i.pointer+1]] = input
+			} else {
+				i.program[i.pointer+1] = input
+			}
 			i.pointer += 2
 		case Output:
 			if codes[2] == 0 {
@@ -53,6 +61,44 @@ func (i *IntcodeComputer) Run() error {
 				fmt.Println("Output:", i.program[i.pointer+1])
 			}
 			i.pointer += 2
+		case JIT:
+			first := i.getVal(1, codes)
+			second := i.getVal(2, codes)
+
+			if first != 0 {
+				i.pointer = second
+			} else {
+				i.pointer += 3
+			}
+		case JIF:
+			first := i.getVal(1, codes)
+			second := i.getVal(2, codes)
+
+			if first == 0 {
+				i.pointer = second
+			} else {
+				i.pointer += 3
+			}
+		case LT:
+			first := i.getVal(1, codes)
+			second := i.getVal(2, codes)
+
+			if first < second {
+				i.program[i.program[i.pointer+3]] = 1
+			} else {
+				i.program[i.program[i.pointer+3]] = 0
+			}
+			i.pointer += 4
+		case EQ:
+			first := i.getVal(1, codes)
+			second := i.getVal(2, codes)
+
+			if first == second {
+				i.program[i.program[i.pointer+3]] = 1
+			} else {
+				i.program[i.program[i.pointer+3]] = 0
+			}
+			i.pointer += 4
 		case Halt:
 			return nil
 		default:
