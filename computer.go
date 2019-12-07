@@ -9,8 +9,11 @@ import (
 
 // IntcodeComputer implements an AOC 2019 intcode computer
 type IntcodeComputer struct {
-	pointer int
-	program []int
+	pointer  int
+	program  []int
+	input    []int
+	inputIdx int
+	output   int
 }
 
 // Incode Computer Instructions
@@ -25,8 +28,6 @@ var (
 	EQ     = 8
 	Halt   = 99
 )
-
-var input = 5
 
 // Run runs the program until it halts
 func (i *IntcodeComputer) Run() error {
@@ -49,16 +50,19 @@ func (i *IntcodeComputer) Run() error {
 			i.pointer += 4
 		case Input:
 			if codes[2] == 0 {
-				i.program[i.program[i.pointer+1]] = input
+				i.program[i.program[i.pointer+1]] = i.input[i.inputIdx]
 			} else {
-				i.program[i.pointer+1] = input
+				i.program[i.pointer+1] = i.input[i.inputIdx]
 			}
+			i.inputIdx++
 			i.pointer += 2
 		case Output:
 			if codes[2] == 0 {
-				fmt.Println("Output:", i.program[i.program[i.pointer+1]])
+				i.output = i.program[i.program[i.pointer+1]]
+				// fmt.Println("Output:", i.program[i.program[i.pointer+1]])
 			} else {
-				fmt.Println("Output:", i.program[i.pointer+1])
+				i.output = i.program[i.pointer+1]
+				// fmt.Println("Output:", i.program[i.pointer+1])
 			}
 			i.pointer += 2
 		case JIT:
@@ -131,6 +135,16 @@ func (i *IntcodeComputer) Peek(pos int) int {
 // Poke allows inspecting the program
 func (i *IntcodeComputer) Poke(pos, val int) {
 	i.program[pos] = val
+}
+
+// Input sets the input to the program
+func (i *IntcodeComputer) Input(val int) {
+	i.input = append(i.input, val)
+}
+
+// Output returns the current output value
+func (i *IntcodeComputer) Output() int {
+	return i.output
 }
 
 // CreateIntcodeComputerFromFile creates an intcode computer from the supplied file
