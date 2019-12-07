@@ -1,10 +1,16 @@
 package advent2019
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
+)
+
+var (
+	// ErrHalted means the Computer has halted
+	ErrHalted = errors.New("Halted")
 )
 
 // IntcodeComputer implements an AOC 2019 intcode computer
@@ -59,12 +65,15 @@ func (i *IntcodeComputer) Run() error {
 		case Output:
 			if codes[2] == 0 {
 				i.output = i.program[i.program[i.pointer+1]]
+				i.pointer += 2
+				return nil
 				// fmt.Println("Output:", i.program[i.program[i.pointer+1]])
 			} else {
 				i.output = i.program[i.pointer+1]
+				i.pointer += 2
+				return nil
 				// fmt.Println("Output:", i.program[i.pointer+1])
 			}
-			i.pointer += 2
 		case JIT:
 			first := i.getVal(1, codes)
 			second := i.getVal(2, codes)
@@ -104,7 +113,7 @@ func (i *IntcodeComputer) Run() error {
 			}
 			i.pointer += 4
 		case Halt:
-			return nil
+			return ErrHalted
 		default:
 			return fmt.Errorf("Invalid opcode: %v found at pointer: %v", i.program[i.pointer], i.pointer)
 		}
