@@ -48,12 +48,11 @@ func (i *IntcodeComputer) Run() error {
 
 		opcode := codes[0]
 		opcode += codes[1] * 10
-		// fmt.Println("opcode:", opcode, "codes:", codes)
+
 		switch opcode {
 		case Add:
 			val := i.getVal(1, codes) + i.getVal(2, codes)
 			if codes[4] == 2 {
-				fmt.Println("relative add output")
 				i.program[i.program[i.pointer+3]+i.relativeBase] = val
 			} else {
 				i.program[i.program[i.pointer+3]] = val
@@ -62,7 +61,6 @@ func (i *IntcodeComputer) Run() error {
 		case Mul:
 			val := i.getVal(1, codes) * i.getVal(2, codes)
 			if codes[4] == 2 {
-				fmt.Println("relative mul output")
 				i.program[i.program[i.pointer+3]+i.relativeBase] = val
 			} else {
 				i.program[i.program[i.pointer+3]] = val
@@ -72,7 +70,6 @@ func (i *IntcodeComputer) Run() error {
 			if codes[2] == 0 {
 				i.program[i.program[i.pointer+1]] = i.input[i.inputIdx]
 			} else if codes[2] == 2 {
-				fmt.Println(codes)
 				i.program[i.relativeBase+i.program[i.pointer+1]] = i.input[i.inputIdx]
 			} else {
 				i.program[i.pointer+1] = i.input[i.inputIdx]
@@ -85,7 +82,6 @@ func (i *IntcodeComputer) Run() error {
 				i.pointer += 2
 				return nil
 			} else if codes[2] == 2 {
-				fmt.Println("relative output")
 				i.output = i.program[i.relativeBase+i.program[i.pointer+1]]
 				i.pointer += 2
 				return nil
@@ -159,8 +155,7 @@ func (i *IntcodeComputer) getVal(idx int, codes []int) int {
 	if codes[idx+1] == 0 {
 		return i.program[i.program[i.pointer+idx]]
 	} else if codes[idx+1] == 2 {
-		fmt.Println("relative val get")
-		return i.program[i.pointer+idx+i.relativeBase]
+		return i.program[i.program[i.pointer+idx]+i.relativeBase]
 	}
 	return i.program[i.pointer+idx]
 }
