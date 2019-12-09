@@ -15,11 +15,12 @@ var (
 
 // IntcodeComputer implements an AOC 2019 intcode computer
 type IntcodeComputer struct {
-	pointer  int
-	program  []int
-	input    []int
-	inputIdx int
-	output   int
+	pointer      int
+	program      []int
+	input        []int
+	inputIdx     int
+	output       int
+	relativeBase int
 }
 
 // Incode Computer Instructions
@@ -32,6 +33,7 @@ var (
 	JIF    = 6
 	LT     = 7
 	EQ     = 8
+	ARB    = 9
 	Halt   = 99
 )
 
@@ -46,17 +48,32 @@ func (i *IntcodeComputer) Run() error {
 
 		opcode := codes[0]
 		opcode += codes[1] * 10
-
+		// fmt.Println("opcode:", opcode, "codes:", codes)
 		switch opcode {
 		case Add:
-			i.program[i.program[i.pointer+3]] = i.getVal(1, codes) + i.getVal(2, codes)
+			val := i.getVal(1, codes) + i.getVal(2, codes)
+			if codes[4] == 2 {
+				fmt.Println("relative add output")
+				i.program[i.program[i.pointer+3]+i.relativeBase] = val
+			} else {
+				i.program[i.program[i.pointer+3]] = val
+			}
 			i.pointer += 4
 		case Mul:
-			i.program[i.program[i.pointer+3]] = i.getVal(1, codes) * i.getVal(2, codes)
+			val := i.getVal(1, codes) * i.getVal(2, codes)
+			if codes[4] == 2 {
+				fmt.Println("relative mul output")
+				i.program[i.program[i.pointer+3]+i.relativeBase] = val
+			} else {
+				i.program[i.program[i.pointer+3]] = val
+			}
 			i.pointer += 4
 		case Input:
 			if codes[2] == 0 {
 				i.program[i.program[i.pointer+1]] = i.input[i.inputIdx]
+			} else if codes[2] == 2 {
+				fmt.Println(codes)
+				i.program[i.relativeBase+i.program[i.pointer+1]] = i.input[i.inputIdx]
 			} else {
 				i.program[i.pointer+1] = i.input[i.inputIdx]
 			}
@@ -67,12 +84,15 @@ func (i *IntcodeComputer) Run() error {
 				i.output = i.program[i.program[i.pointer+1]]
 				i.pointer += 2
 				return nil
-				// fmt.Println("Output:", i.program[i.program[i.pointer+1]])
+			} else if codes[2] == 2 {
+				fmt.Println("relative output")
+				i.output = i.program[i.relativeBase+i.program[i.pointer+1]]
+				i.pointer += 2
+				return nil
 			} else {
 				i.output = i.program[i.pointer+1]
 				i.pointer += 2
 				return nil
-				// fmt.Println("Output:", i.program[i.pointer+1])
 			}
 		case JIT:
 			first := i.getVal(1, codes)
@@ -96,22 +116,37 @@ func (i *IntcodeComputer) Run() error {
 			first := i.getVal(1, codes)
 			second := i.getVal(2, codes)
 
+			var val int
 			if first < second {
-				i.program[i.program[i.pointer+3]] = 1
+				val = 1
 			} else {
-				i.program[i.program[i.pointer+3]] = 0
+				val = 0
+			}
+			if codes[4] == 2 {
+				i.program[i.program[i.pointer+3]+i.relativeBase] = val
+			} else {
+				i.program[i.program[i.pointer+3]] = val
 			}
 			i.pointer += 4
 		case EQ:
 			first := i.getVal(1, codes)
 			second := i.getVal(2, codes)
 
+			var val int
 			if first == second {
-				i.program[i.program[i.pointer+3]] = 1
+				val = 1
 			} else {
-				i.program[i.program[i.pointer+3]] = 0
+				val = 0
+			}
+			if codes[4] == 2 {
+				i.program[i.program[i.pointer+3]+i.relativeBase] = val
+			} else {
+				i.program[i.program[i.pointer+3]] = val
 			}
 			i.pointer += 4
+		case ARB:
+			i.relativeBase += i.getVal(1, codes)
+			i.pointer += 2
 		case Halt:
 			return ErrHalted
 		default:
@@ -123,6 +158,9 @@ func (i *IntcodeComputer) Run() error {
 func (i *IntcodeComputer) getVal(idx int, codes []int) int {
 	if codes[idx+1] == 0 {
 		return i.program[i.program[i.pointer+idx]]
+	} else if codes[idx+1] == 2 {
+		fmt.Println("relative val get")
+		return i.program[i.pointer+idx+i.relativeBase]
 	}
 	return i.program[i.pointer+idx]
 }
@@ -165,13 +203,13 @@ func CreateIntcodeComputerFromFile(fileName string) (*IntcodeComputer, error) {
 
 	intStrs := strings.Split(strings.TrimSpace(string(data)), ",")
 
-	var ints []int
-	for _, i := range intStrs {
+	ints := make([]int, 1000000)
+	for idx, i := range intStrs {
 		val, err := strconv.Atoi(i)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse '%v' as an int: %v", i, err)
 		}
-		ints = append(ints, val)
+		ints[idx] = val
 	}
 
 	return createIntcodeComputer(ints)
