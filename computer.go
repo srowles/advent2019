@@ -67,12 +67,19 @@ func (i *IntcodeComputer) Run() error {
 			}
 			i.pointer += 4
 		case Input:
-			if codes[2] == 0 {
-				i.program[i.program[i.pointer+1]] = i.input[i.inputIdx]
-			} else if codes[2] == 2 {
-				i.program[i.relativeBase+i.program[i.pointer+1]] = i.input[i.inputIdx]
+			var input int
+			if i.inputIdx >= len(i.input) {
+				input = 0
+				i.inputIdx--
 			} else {
-				i.program[i.pointer+1] = i.input[i.inputIdx]
+				input = i.input[i.inputIdx]
+			}
+			if codes[2] == 0 {
+				i.program[i.program[i.pointer+1]] = input
+			} else if codes[2] == 2 {
+				i.program[i.relativeBase+i.program[i.pointer+1]] = input
+			} else {
+				i.program[i.pointer+1] = input
 			}
 			i.inputIdx++
 			i.pointer += 2
