@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"math"
-	"os"
+	"math/rand"
 
 	"github.com/srowles/advent2019"
 )
@@ -26,6 +25,7 @@ func main() {
 		log.Fatalf("Failed to create comuter with error: %v", err)
 	}
 
+	iterations := 0
 	for {
 		computer.Input(dir)
 		err = computer.Run()
@@ -44,29 +44,34 @@ func main() {
 			move()
 		}
 		if out == 2 {
-			move()
+			// move()
 			markOxygen()
+			break
 		}
-		fmt.Println(pos)
-		fmt.Printf("minx:%d,miny:%d,maxx:%d,maxy:%d\n", minx(), miny(), maxx(), maxy())
-		render()
 
-		r := bufio.NewReader(os.Stdin)
-		c, err := r.ReadByte()
-		if err != nil {
-			panic("wtf" + err.Error())
+		if iterations%1000 == 0 {
+			render()
 		}
-		switch c {
-		case 'w':
-			dir = 1
-		case 's':
-			dir = 2
-		case 'a':
-			dir = 3
-		case 'd':
-			dir = 4
-		}
+		// fmt.Println(iterations)
+		iterations++
+		dir = rand.Intn(4) + 1
+		// r := bufio.NewReader(os.Stdin)
+		// c, err := r.ReadByte()
+		// if err != nil {
+		// 	panic("wtf" + err.Error())
+		// }
+		// switch c {
+		// case 'w':
+		// 	dir = 1
+		// case 's':
+		// 	dir = 2
+		// case 'a':
+		// 	dir = 3
+		// case 'd':
+		// 	dir = 4
+		// }
 	}
+	render()
 }
 
 func markOxygen() {
@@ -102,6 +107,7 @@ func markWall() {
 }
 
 func render() {
+	fmt.Printf("minx:%d,miny:%d,maxx:%d,maxy:%d\n", minx(), miny(), maxx(), maxy())
 	for y := miny() - 5; y < maxy()+5; y++ {
 		for x := minx() - 5; x < maxx()+5; x++ {
 			fmt.Print(charAt(x, y))
@@ -164,14 +170,15 @@ func maxx() int {
 }
 
 func charAt(x, y int) string {
+	if area[coord{x: x, y: y}] == 2 {
+		return "O"
+	}
+
 	if x == pos.x && y == pos.y {
 		return "D"
 	}
 	if area[coord{x: x, y: y}] == 1 {
 		return "#"
-	}
-	if area[coord{x: x, y: y}] == 2 {
-		return "O"
 	}
 
 	return "."
