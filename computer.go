@@ -191,6 +191,11 @@ func (i *IntcodeComputer) Input(val int) {
 	i.input = append(i.input, val)
 }
 
+// Input sets the input to the program
+func (i *IntcodeComputer) Inputs(vals []int) {
+	i.input = append(i.input, vals...)
+}
+
 // Output returns the current output value
 func (i *IntcodeComputer) Output() int {
 	return i.output
