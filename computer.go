@@ -23,6 +23,15 @@ type IntcodeComputer struct {
 	relativeBase int
 }
 
+// GetProgram returns the program contents
+func (i *IntcodeComputer) GetProgram() []int {
+	var out []int
+	for _, i := range i.program {
+		out = append(out, i)
+	}
+	return out
+}
+
 // Incode Computer Instructions
 var (
 	Add    = 1
@@ -191,7 +200,7 @@ func (i *IntcodeComputer) Input(val int) {
 	i.input = append(i.input, val)
 }
 
-// Input sets the input to the program
+// Inputs sets the input to the program
 func (i *IntcodeComputer) Inputs(vals []int) {
 	i.input = append(i.input, vals...)
 }
@@ -219,11 +228,11 @@ func CreateIntcodeComputerFromFile(fileName string) (*IntcodeComputer, error) {
 		ints[idx] = val
 	}
 
-	return createIntcodeComputer(ints)
+	return CreateIntcodeComputer(ints)
 }
 
 // CreateIntcodeComputer creates an intcode computer from the supplied file
-func createIntcodeComputer(ints []int) (*IntcodeComputer, error) {
+func CreateIntcodeComputer(ints []int) (*IntcodeComputer, error) {
 	computer := &IntcodeComputer{
 		program: ints,
 	}
