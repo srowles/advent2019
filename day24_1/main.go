@@ -39,7 +39,9 @@ func calcDiversity(newGrid map[point]int) {
 	for y := 0; y < 5; y++ {
 		for x := 0; x < 5; x++ {
 			p := point{x: x, y: y}
-			bio += newGrid[p] * multiplier
+			if newGrid[p] == 1 {
+				bio += multiplier
+			}
 			multiplier *= 2
 		}
 	}
@@ -75,6 +77,7 @@ func processGrid() map[point]int {
 		for x := 0; x < 5; x++ {
 			p := point{x: x, y: y}
 			c := adjacentBugs(p)
+			newGrid[p] = grid[p]
 			if grid[p] == 1 && c != 1 {
 				newGrid[p] = 0
 			}
